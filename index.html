@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BosonBooks</title>
+<link rel="icon" href="data:,">
+<style>
+:root {
+  --paper: #f0eef6; --sheet: #e4e0ee; --ink: #241d3f; --soft: #5b5474; --line: #c9c3da;
+  --binding: #a3301d; --link: #2b4a99;
+  --serif: "Hoefler Text", Baskerville, "Baskerville Old Face", "Libre Baskerville", "Palatino Linotype", "URW Palladio L", "P052", serif;
+  --sans: "Gill Sans", "Gill Sans Nova", Seravek, Calibri, "Noto Sans", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.5 var(--sans); }
+a { color: var(--link); }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--binding); outline-offset: 2px; }
+.page { max-width: 880px; margin: 0 auto; padding: 26px 24px 80px; }
+header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 9vh; }
+.brand { font: 600 20px var(--serif); background: none; border: 0; padding: 0; cursor: pointer; }
+.tolist { background: none; border: 1px solid var(--line); padding: 4px 13px; border-radius: 2px; cursor: pointer; }
+.tolist:hover { border-color: var(--ink); }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+#q { width: 100%; background: none; border: 0; border-bottom: 3px solid var(--ink); border-radius: 0; font: 400 clamp(36px, 7.4vw, 68px)/1.15 var(--serif); padding: 0 0 8px; letter-spacing: -.01em; }
+#q:focus { outline: none; border-bottom-color: var(--binding); }
+#q::placeholder { color: var(--soft); opacity: .65; }
+.modes { display: flex; flex-wrap: wrap; gap: 4px 22px; margin: 14px 0 0; border: 0; padding: 0; }
+.modes label { cursor: pointer; display: flex; gap: 6px; align-items: center; }
+.modes input { accent-color: var(--binding); }
+.filters { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin: 18px 0 0; font-size: 15.5px; }
+.filters label { display: flex; gap: 7px; align-items: center; }
+.filters select { background: var(--paper); border: 1px solid var(--line); padding: 3px 5px; border-radius: 2px; }
+.go { background: var(--ink); color: var(--paper); border: 0; padding: 7px 26px; border-radius: 2px; font-weight: 600; cursor: pointer; margin-top: 18px; }
+.notice { margin: 28px 0 0; padding: 10px 14px; background: var(--sheet); font-size: 15.5px; max-width: 70ch; }
+.summary { margin: 42px 0 6px; color: var(--soft); }
+.book { padding: 22px 0; border-top: 1px solid var(--line); }
+.book h2 { font: 400 26px/1.22 var(--serif); margin: 0; }
+.book h2 small { display: block; font: inherit; font-size: 19px; color: var(--soft); margin-top: 2px; }
+.by { margin: 5px 0 0; font-weight: 600; }
+.edition { margin: 2px 0 0; color: var(--soft); }
+.topics { margin: 6px 0 0; font-size: 15px; color: var(--soft); max-width: 70ch; }
+.isbn { margin: 10px 0 0; font-size: 16px; font-variant-numeric: tabular-nums; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.isbn b { font-weight: 600; letter-spacing: .02em; }
+.isbn .none { color: var(--binding); }
+.small { background: none; border: 1px solid var(--line); padding: 1px 9px; border-radius: 2px; font-size: 14.5px; cursor: pointer; }
+.small:hover { border-color: var(--ink); }
+.shops { display: flex; flex-wrap: wrap; gap: 4px 18px; margin: 10px 0 0; font-size: 16px; }
+.want { margin-top: 12px; background: var(--binding); color: #fff; border: 0; padding: 5px 15px; border-radius: 2px; font-weight: 600; cursor: pointer; }
+.want[disabled] { background: none; color: var(--soft); padding-left: 0; cursor: default; font-weight: 400; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 12px; }
+.row select { background: var(--paper); border: 1px solid var(--line); padding: 3px 5px; border-radius: 2px; }
+.more { margin: 26px 0; }
+.start { margin-top: 44px; }
+.start h2 { font: 400 22px var(--serif); margin: 0 0 8px; }
+.try { display: flex; flex-wrap: wrap; gap: 8px; }
+.try button { background: none; border: 1px solid var(--line); padding: 4px 12px; border-radius: 2px; cursor: pointer; }
+.try button:hover { border-color: var(--ink); }
+footer { margin-top: 60px; border-top: 1px solid var(--line); padding-top: 14px; font-size: 14.5px; color: var(--soft); }
+footer summary { cursor: pointer; }
+footer input { width: min(100%, 380px); padding: 4px 7px; border: 1px solid var(--line); background: var(--paper); margin: 8px 8px 0 0; }
+.status { position: fixed; right: 18px; bottom: 18px; background: var(--ink); color: var(--paper); padding: 8px 14px; border-radius: 2px; }
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: no-preference) { .book[data-enter] { animation: rise .24s ease-out; } @keyframes rise { from { opacity: 0; transform: translateY(5px); } } }
+@media (max-width: 560px) { header { margin-bottom: 40px; } .book h2 { font-size: 23px; } }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <button class="brand" id="home" type="button">BosonBooks</button>
+    <button class="tolist" id="tolist" type="button">My list (0)</button>
+  </header>
+
+  <section id="searchView">
+    <form id="form" role="search">
+      <label class="vh" for="q">Search for books</label>
+      <input id="q" type="search" placeholder="Any topic or keyword" autocomplete="off" autofocus>
+      <fieldset class="modes">
+        <legend class="vh">Search by</legend>
+        <label><input type="radio" name="by" value="keyword" checked> Topic or keyword</label>
+        <label><input type="radio" name="by" value="title"> Title</label>
+        <label><input type="radio" name="by" value="author"> Author</label>
+        <label><input type="radio" name="by" value="isbn"> ISBN</label>
+      </fieldset>
+      <div class="filters">
+        <label>Language <select id="lang"><option value="en">English</option><option value="">Any</option></select></label>
+        <label>Published <select id="since"><option value="0">Any year</option><option value="2022">2022 or later</option><option value="2018">2018 or later</option><option value="2010">2010 or later</option></select></label>
+        <label>Order <select id="sort"><option value="best">Best match</option><option value="new">Newest first</option><option value="known">Most established</option></select></label>
+        <label><input id="hasIsbn" type="checkbox"> With ISBN only</label>
+      </div>
+      <button class="go" type="submit">Search</button>
+    </form>
+    <div class="notice" id="notice" role="status" hidden></div>
+    <div id="start" class="start">
+      <h2>Try one of these</h2>
+      <div class="try" id="try"></div>
+    </div>
+    <p class="summary" id="summary" hidden></p>
+    <div id="results"></div>
+    <div class="more" id="more" hidden><button class="small" id="moreBtn" type="button">Find more books</button></div>
+  </section>
+
+  <section id="listView" hidden>
+    <h1 style="font:400 44px/1.1 var(--serif);margin:0 0 10px">My list</h1>
+    <p id="listNote" style="color:var(--soft);margin:0 0 22px"></p>
+    <div class="row" style="margin:0 0 20px"><button class="small" id="csv" type="button">Download as CSV</button></div>
+    <div id="listRows"></div>
+  </section>
+
+  <footer>
+    Catalogue records from <a href="https://openlibrary.org" rel="noopener">Open Library</a> and <a href="https://books.google.com" rel="noopener">Google Books</a>. Check the edition and price at the shop before you buy.
+    <details style="margin-top:8px">
+      <summary>Google Books key (only if Google Books stops responding)</summary>
+      <label class="vh" for="gkey">Google Books API key</label>
+      <input id="gkey" type="password" placeholder="Paste a free Google Books API key" autocomplete="off">
+      <button class="small" id="saveKey" type="button">Save key</button>
+      <div>The key stays in this browser. Google allows only a low number of searches without one.</div>
+    </details>
+  </footer>
+</div>
+<div class="status" id="status" role="status" hidden></div>
+
+<script>
+"use strict";
+const PAGE_SIZE = 40, TIMEOUT = 20000, CURRENT_YEAR = new Date().getFullYear();
+const STORE = { list: "bosonbooks.list", key: "bosonbooks.gkey" };
+const EXAMPLES = ["VLSI physical design", "GPU programming", "large language models", "number theory", "medicinal chemistry", "Upanishads"];
+const STATUSES = { want: "Want to buy", ordered: "Ordered", have: "Have it" };
+const STOP = new Set("a an and the of in on for to with by from at or book books".split(" "));
+const OL_FIELDS = "key,title,subtitle,author_name,first_publish_year,edition_count,number_of_pages_median,subject,language,ratings_count,want_to_read_count,isbn,publisher,editions,editions.key,editions.title,editions.publisher,editions.publish_date,editions.isbn,editions.language";
+
+const $ = id => document.getElementById(id);
+const cache = new Map();
+const state = { raw: [], page: 1, query: null, controller: null, more: { ol: false, g: false } };
+
+function el(tag, props = {}, ...kids) {
+  const node = Object.assign(document.createElement(tag), props);
+  node.append(...kids.filter(k => k !== null && k !== undefined && k !== false));
+  return node;
+}
+function store(key, value) { try { value === undefined ? localStorage.removeItem(key) : localStorage.setItem(key, value); } catch {} }
+function recall(key) { try { return localStorage.getItem(key); } catch { return null; } }
+function toast(msg) { const s = $("status"); s.textContent = msg; s.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => s.hidden = true, 2400); }
+const clean = s => String(s || "").replace(/\s+/g, " ").trim();
+const stem = w => w.length > 3 ? w.replace(/s$/, "") : w;
+const words = s => clean(s).toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").split(/[^\p{L}\p{N}+#]+/u).filter(Boolean).map(stem);
+const yearOf = s => { const m = String(s || "").match(/\b(1[5-9]\d\d|20\d\d)\b/g); return m ? Math.max(...m.map(Number)) : 0; };
+const isbnDigits = s => String(s || "").replace(/[^0-9Xx]/g, "").toUpperCase();
+const looksLikeIsbn = s => /^(97[89])?\d{9}[\dX]$/.test(isbnDigits(s)) && /^[\d\sXx-]+$/.test(s.trim());
+const solrSafe = s => clean(s.replace(/[:()\[\]{}^~*?\\\/!"]/g, " "));
+
+/* ---------- catalogue requests ---------- */
+function openLibraryUrl({ text, by, lang, sort }, page) {
+  const t = solrSafe(text);
+  const base = by === "isbn" ? "isbn:" + isbnDigits(text) : by === "title" ? `title:(${t})` : by === "author" ? `author:(${t})` : t;
+  const params = new URLSearchParams({ q: base + (lang && by !== "isbn" ? " language:eng" : ""), fields: OL_FIELDS, limit: PAGE_SIZE, page });
+  if (sort === "new") params.set("sort", "new");
+  return "https://openlibrary.org/search.json?" + params;
+}
+function googleUrl({ text, by, lang, sort }, page) {
+  const q = by === "isbn" ? "isbn:" + isbnDigits(text) : by === "title" ? "intitle:" + text : by === "author" ? "inauthor:" + text : text;
+  const params = new URLSearchParams({ q, maxResults: PAGE_SIZE, startIndex: (page - 1) * PAGE_SIZE, printType: "books", country: "IN", orderBy: sort === "new" ? "newest" : "relevance" });
+  if (lang) params.set("langRestrict", lang);
+  const key = recall(STORE.key);
+  if (key) params.set("key", key);
+  return "https://www.googleapis.com/books/v1/volumes?" + params;
+}
+async function getJson(url, signal) {
+  if (cache.has(url)) return cache.get(url);
+  const timer = new AbortController();
+  const stop = setTimeout(() => timer.abort(), TIMEOUT);
+  const onAbort = () => timer.abort();
+  signal.addEventListener("abort", onAbort);
+  try {
+    const res = await fetch(url, { signal: timer.signal });
+    if (!res.ok) { const e = new Error("HTTP " + res.status); e.status = res.status; throw e; }
+    const json = await res.json();
+    cache.set(url, json);
+    return json;
+  } finally { clearTimeout(stop); signal.removeEventListener("abort", onAbort); }
+}
+
+/* ---------- turning records into books ---------- */
+function splitIsbns(list) {
+  const out = { i13: "", i10: "", all: [] };
+  (list || []).map(isbnDigits).forEach(v => {
+    if (v.length === 13) { out.all.push(v); out.i13 = out.i13 || v; }
+    else if (v.length === 10) { out.all.push(v); out.i10 = out.i10 || v; }
+  });
+  return out;
+}
+function fromOpenLibrary(d) {
+  const ed = (d.editions && d.editions.docs && d.editions.docs[0]) || {};
+  const editionIsbn = splitIsbns(ed.isbn);
+  const workIsbn = splitIsbns(d.isbn);
+  return {
+    title: clean(d.title), subtitle: clean(d.subtitle), authors: (d.author_name || []).map(clean),
+    publisher: clean((ed.publisher || [])[0] || (d.publisher || [])[0]),
+    year: yearOf(ed.publish_date), firstYear: d.first_publish_year || 0,
+    isbn13: editionIsbn.i13 || workIsbn.i13, isbn10: editionIsbn.i10 || workIsbn.i10,
+    isbns: [...editionIsbn.all, ...workIsbn.all.slice(0, 200)],
+    pages: d.number_of_pages_median || 0, topics: (d.subject || []).slice(0, 24).map(clean),
+    editions: d.edition_count || 0, readers: (d.ratings_count || 0) + (d.want_to_read_count || 0),
+    olUrl: d.key ? "https://openlibrary.org" + d.key : "", gUrl: "", catalogues: 1
+  };
+}
+function fromGoogle(item) {
+  const v = item.volumeInfo || {};
+  const ids = splitIsbns((v.industryIdentifiers || []).map(i => i.identifier));
+  const link = /^https?:/.test(v.infoLink || "") ? v.infoLink : "";
+  return {
+    title: clean(v.title), subtitle: clean(v.subtitle), authors: (v.authors || []).map(clean),
+    publisher: clean(v.publisher), year: yearOf(v.publishedDate), firstYear: 0,
+    isbn13: ids.i13, isbn10: ids.i10, isbns: ids.all, pages: v.pageCount || 0,
+    topics: (v.categories || []).map(clean), editions: 0, readers: v.ratingsCount || 0,
+    olUrl: "", gUrl: link, catalogues: 1
+  };
+}
+const titleKey = b => words(b.title.split(":")[0]).join("");
+const authorKey = b => { const a = words(b.authors[0] || ""); return a[a.length - 1] || ""; };
+function mergeBooks(records) {
+  const index = new Map(), books = [];
+  for (const r of records) {
+    if (!r.title) continue;
+    const key = "t|" + titleKey(r) + "|" + authorKey(r);
+    const keys = [key, ...r.isbns.map(i => "i|" + i)];
+    const found = keys.map(k => index.get(k)).find(Boolean);
+    if (!found) {
+      const b = { ...r, topics: [...r.topics], isbns: [...r.isbns] };
+      books.push(b);
+      keys.forEach(k => index.set(k, b));
+      continue;
+    }
+    const firstFromOther = (found.olUrl && !found.gUrl && r.gUrl) || (found.gUrl && !found.olUrl && r.olUrl);
+    if (firstFromOther) found.catalogues = 2;
+    // Show whichever edition is newest and can actually be ordered by ISBN.
+    if ((r.isbn13 || r.isbn10) && (!(found.isbn13 || found.isbn10) || r.year > found.year)) {
+      Object.assign(found, { isbn13: r.isbn13, isbn10: r.isbn10, year: r.year || found.year, publisher: r.publisher || found.publisher, pages: r.pages || found.pages });
+    }
+    found.publisher = found.publisher || r.publisher;
+    found.year = found.year || r.year;
+    found.subtitle = found.subtitle || r.subtitle;
+    found.pages = found.pages || r.pages;
+    found.firstYear = found.firstYear || r.firstYear;
+    found.editions = Math.max(found.editions, r.editions);
+    found.readers = Math.max(found.readers, r.readers);
+    found.olUrl = found.olUrl || r.olUrl;
+    found.gUrl = found.gUrl || r.gUrl;
+    if (!found.authors.length) found.authors = r.authors;
+    found.topics = [...new Set([...found.topics, ...r.topics])];
+    found.isbns.push(...r.isbns);
+    keys.forEach(k => index.set(k, found));
+  }
+  return books;
+}
+function rank(b, query) {
+  const terms = [...new Set(words(query.text))].filter(w => !STOP.has(w));
+  const share = hay => { if (!terms.length) return 0; const set = new Set(words(hay)); return terms.filter(t => set.has(t)).length / terms.length; };
+  const main = query.by === "author" ? b.authors.join(" ") : b.title + " " + b.subtitle;
+  let s = 50 * share(main) + 15 * share(b.topics.join(" "));
+  if (words(main).join(" ").includes(words(query.text).join(" "))) s += 15;
+  if (b.catalogues > 1) s += 10;
+  s += Math.min(15, Math.log2(1 + b.editions) * 3) + Math.min(10, Math.log2(1 + b.readers) * 1.5);
+  s += b.isbn13 || b.isbn10 ? 5 : -10;
+  if (!b.authors.length) s -= 15;
+  if ((b.year || b.firstYear) >= CURRENT_YEAR - 8) s += 5;
+  return s;
+}
+const bookId = b => "b" + (b.isbn13 || b.isbn10 || titleKey(b) + authorKey(b));
+
+/* ---------- search ---------- */
+function readQuery() {
+  const raw = $("q").value.trim();
+  let by = document.querySelector("input[name=by]:checked").value;
+  if (by === "keyword" && looksLikeIsbn(raw)) by = "isbn";
+  return { text: raw, by, lang: $("lang").value, sort: $("sort").value };
+}
+function notice(msg) { $("notice").textContent = msg || ""; $("notice").hidden = !msg; }
+function explain(name, err) {
+  if (err.status === 429 || err.status === 403) return `${name} has hit its limit for now.${name === "Google Books" ? " Add a free key at the bottom of this page." : " Wait a minute and search again."}`;
+  if (err.name === "AbortError") return `${name} took too long to respond.`;
+  return `${name} could not be reached.`;
+}
+async function runSearch(append = false) {
+  const query = append ? state.query : readQuery();
+  if (!query.text) { $("q").focus(); return; }
+  if (state.controller) state.controller.abort();
+  const controller = state.controller = new AbortController();
+  if (!append) {
+    state.raw = []; state.page = 1; state.query = query;
+    location.replace("#" + new URLSearchParams({ q: query.text, by: query.by }));
+    $("start").hidden = true;
+    $("results").replaceChildren();
+    $("more").hidden = true;
+  }
+  $("summary").hidden = false; $("summary").textContent = "Searching…";
+  notice("");
+  const [ol, gb] = await Promise.allSettled([
+    getJson(openLibraryUrl(query, state.page), controller.signal),
+    getJson(googleUrl(query, state.page), controller.signal)
+  ]);
+  if (controller !== state.controller) return;
+  const problems = [];
+  if (ol.status === "fulfilled") { const docs = ol.value.docs || []; state.raw.push(...docs.map(fromOpenLibrary)); state.more.ol = docs.length === PAGE_SIZE; }
+  else { problems.push(explain("Open Library", ol.reason)); state.more.ol = false; }
+  if (gb.status === "fulfilled") { const items = gb.value.items || []; state.raw.push(...items.map(fromGoogle)); state.more.g = items.length > 0; }
+  else { problems.push(explain("Google Books", gb.reason)); state.more.g = false; }
+  if (problems.length === 2) {
+    notice(problems.join(" ") + " Check your connection and search again.");
+    $("summary").hidden = true;
+    return;
+  }
+  if (problems.length) notice(problems[0] + " These results are from the other catalogue only.");
+  render(append);
+}
+function visibleBooks() {
+  const since = +$("since").value, onlyIsbn = $("hasIsbn").checked, sort = state.query.sort;
+  const books = mergeBooks(state.raw).filter(b => (!since || (b.year || b.firstYear) >= since) && (!onlyIsbn || b.isbn13 || b.isbn10));
+  books.forEach(b => b.rank = rank(b, state.query));
+  const when = b => b.year || b.firstYear;
+  const order = sort === "new" ? (a, b) => when(b) - when(a) || b.rank - a.rank
+    : sort === "known" ? (a, b) => (b.editions + b.readers) - (a.editions + a.readers) || b.rank - a.rank
+    : (a, b) => b.rank - a.rank;
+  return books.sort(order);
+}
+function render(append) {
+  if (!state.query) return;
+  const books = visibleBooks();
+  $("summary").hidden = false;
+  $("summary").textContent = books.length === 1 ? "1 book" : books.length.toLocaleString() + " books";
+  const box = $("results"); box.replaceChildren();
+  if (!books.length && !$("notice").textContent) notice("No books matched. Try fewer or broader words, or set Published to Any year.");
+  books.forEach((b, i) => { const node = bookRow(b); if (append !== undefined && i < 12) node.dataset.enter = ""; box.append(node); });
+  $("more").hidden = !(state.more.ol || state.more.g);
+}
+
+/* ---------- display ---------- */
+function shopLinks(b) {
+  const isbn = b.isbn13 || b.isbn10;
+  const key = encodeURIComponent(isbn || clean(b.title + " " + (b.authors[0] || "")));
+  const link = (text, href) => el("a", { href, target: "_blank", rel: "noopener", textContent: text });
+  const publisherQuery = encodeURIComponent(`"${b.title}" ${b.publisher || b.authors[0] || ""} buy`);
+  const out = [
+    link("Amazon India", `https://www.amazon.in/s?i=stripbooks&k=${key}`),
+    link("Flipkart", `https://www.flipkart.com/search?q=${key}`),
+    link("Used copies", `https://www.abebooks.com/servlet/SearchResults?kn=${key}`),
+    link("Libraries", `https://search.worldcat.org/search?q=${key}`),
+    link("Publisher", `https://www.google.com/search?q=${publisherQuery}`)
+  ];
+  if (b.olUrl) out.push(link("Open Library record", b.olUrl));
+  if (b.gUrl) out.push(link("Google Books record", b.gUrl));
+  return el("div", { className: "shops" }, ...out);
+}
+function editionLine(b) {
+  const parts = [b.publisher];
+  if (b.year) parts.push(String(b.year));
+  if (b.pages) parts.push(b.pages + " pages");
+  let line = parts.filter(Boolean).join(", ");
+  if (b.firstYear && b.year && b.firstYear < b.year) line += (line ? ". " : "") + "First published " + b.firstYear;
+  else if (b.firstYear && !b.year) line += (line ? ". " : "") + "First published " + b.firstYear;
+  if (b.editions > 1) line += (line ? ". " : "") + b.editions + " editions";
+  return line || "Edition details not in the catalogue";
+}
+function isbnLine(b) {
+  const isbn = b.isbn13 || b.isbn10;
+  if (!isbn) return el("p", { className: "isbn" }, el("span", { className: "none", textContent: "No ISBN in the catalogue. Links below search by title." }));
+  return el("p", { className: "isbn" }, "ISBN ", el("b", { textContent: isbn }), el("button", { type: "button", className: "small", textContent: "Copy ISBN", ariaLabel: "Copy ISBN " + isbn, onclick: async () => {
+    try { await navigator.clipboard.writeText(isbn); toast("Copied " + isbn); } catch { toast("Copy blocked. ISBN: " + isbn); }
+  } }));
+}
+function details(b) {
+  const nodes = [
+    el("h2", {}, b.title, b.subtitle ? el("small", { textContent: b.subtitle }) : null),
+    el("p", { className: "by", textContent: b.authors.slice(0, 4).join(", ") || "Author not listed" }),
+    el("p", { className: "edition", textContent: editionLine(b) })
+  ];
+  if (b.topics.length) nodes.push(el("p", { className: "topics", textContent: "Topics: " + b.topics.slice(0, 6).join(", ") }));
+  nodes.push(isbnLine(b), shopLinks(b));
+  return nodes;
+}
+function bookRow(b) {
+  const id = bookId(b), inList = readList().some(x => x.id === id);
+  const add = el("button", { type: "button", className: "want", textContent: inList ? "On your list" : "Add to my list", disabled: inList });
+  add.onclick = () => { addToList(b); add.textContent = "On your list"; add.disabled = true; toast("Added to your list"); };
+  return el("article", { className: "book" }, ...details(b), add);
+}
+
+/* ---------- my list ---------- */
+function readList() { try { return JSON.parse(recall(STORE.list) || "[]"); } catch { return []; } }
+function writeList(list) { store(STORE.list, JSON.stringify(list)); $("tolist").textContent = `My list (${list.length})`; }
+function addToList(b) {
+  const list = readList();
+  const { title, subtitle, authors, publisher, year, firstYear, isbn13, isbn10, pages, olUrl, gUrl } = b;
+  list.unshift({ id: bookId(b), title, subtitle, authors, publisher, year, firstYear, isbn13, isbn10, pages, olUrl, gUrl, topics: b.topics.slice(0, 6), editions: b.editions, status: "want" });
+  writeList(list);
+}
+function renderList() {
+  const list = readList();
+  $("listNote").textContent = list.length ? "Saved in this browser. Download a copy to keep it safe." : "Nothing here yet. Search for a book and choose Add to my list.";
+  $("csv").hidden = !list.length;
+  $("listRows").replaceChildren(...list.map(b => {
+    const pick = el("select", { ariaLabel: "Status of " + b.title });
+    Object.entries(STATUSES).forEach(([v, t]) => pick.append(el("option", { value: v, textContent: t, selected: v === b.status })));
+    pick.onchange = () => { const all = readList(); all.find(x => x.id === b.id).status = pick.value; writeList(all); toast("Marked " + STATUSES[pick.value].toLowerCase()); };
+    const remove = el("button", { type: "button", className: "small", textContent: "Remove", onclick: () => { writeList(readList().filter(x => x.id !== b.id)); renderList(); } });
+    return el("article", { className: "book" }, ...details(b), el("div", { className: "row" }, pick, remove));
+  }));
+}
+function csvCell(v) {
+  let s = String(v ?? "");
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;  // Stops spreadsheets treating catalogue text as formulas.
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+function downloadCsv() {
+  const head = ["Title", "Author", "Publisher", "Year", "ISBN", "Status"];
+  const rows = readList().map(b => [b.subtitle ? `${b.title}: ${b.subtitle}` : b.title, (b.authors || []).join("; "), b.publisher, b.year || b.firstYear || "", b.isbn13 || b.isbn10 || "", STATUSES[b.status]]);
+  const text = "﻿" + [head, ...rows].map(r => r.map(csvCell).join(",")).join("\r\n");
+  const url = URL.createObjectURL(new Blob([text], { type: "text/csv;charset=utf-8" }));
+  const a = el("a", { href: url, download: "my-books.csv" });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  toast("Downloaded my-books.csv");
+}
+function show(view) {
+  $("searchView").hidden = view !== "search";
+  $("listView").hidden = view !== "list";
+  if (view === "list") renderList(); else if (state.query) render();
+}
+
+/* ---------- wiring ---------- */
+EXAMPLES.forEach(t => $("try").append(el("button", { type: "button", textContent: t, onclick: () => { $("q").value = t; runSearch(); } })));
+$("form").addEventListener("submit", e => { e.preventDefault(); runSearch(); });
+$("moreBtn").onclick = () => { state.page += 1; runSearch(true); };
+$("tolist").onclick = () => show("list");
+$("home").onclick = () => show("search");
+$("csv").onclick = downloadCsv;
+$("saveKey").onclick = () => { const v = $("gkey").value.trim(); store(STORE.key, v || undefined); cache.clear(); $("gkey").value = ""; toast(v ? "Key saved in this browser" : "Key removed"); };
+$("since").onchange = $("hasIsbn").onchange = () => { if (state.query) { notice(""); render(); } };
+$("sort").onchange = $("lang").onchange = () => { if ($("q").value.trim() && state.query) runSearch(); };
+writeList(readList());
+const initial = new URLSearchParams(location.hash.slice(1));
+if (initial.get("q")) {
+  $("q").value = initial.get("q");
+  const radio = document.querySelector(`input[name=by][value="${(initial.get("by") || "").replace(/[^a-z]/g, "")}"]`);
+  if (radio) radio.checked = true;
+  runSearch();
+}
+</script>
+</body>
+</html>
